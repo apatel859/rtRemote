@@ -200,6 +200,7 @@ rtRemoteServer::rtRemoteServer(rtRemoteEnvironment* env)
   , m_env(env)
 {
   memset(&m_rpc_endpoint, 0, sizeof(m_rpc_endpoint));
+    rtLogError("Amit constructor m_resolver :%p  \n ",m_resolver );
 
   m_shutdown_pipe[0] = -1;
   m_shutdown_pipe[1] = -1;
@@ -262,6 +263,7 @@ rtRemoteServer::~rtRemoteServer()
   if (m_shutdown_pipe[1] != -1)
     ::close(m_shutdown_pipe[1] = -1);
 
+    rtLogError("Amit disructor m_resolver :%p  \n ",m_resolver );
   if (m_resolver)
   {
     m_resolver->close();
@@ -277,6 +279,7 @@ rtRemoteServer::open()
     return err;
 
   m_resolver = rtRemoteFactory::rtRemoteCreateResolver(m_env);
+    rtLogError("Amit open m_resolver :%p  \n ",m_resolver );
   err = start();
   if (err != RT_OK)
   {
@@ -512,12 +515,23 @@ rtRemoteServer::findObject(std::string const& objectId, rtObjectRef& obj, uint32
         clientDisconnectedCallback cb, void *cbdata)
 {
   rtError err = RT_OK;
+  rtLogError("Amit findObject  222 \n ");
   obj = m_env->ObjectCache->findObject(objectId);
 
   // if object is not registered with us locally, then check network
   if (!obj)
   {
     sockaddr_storage objectEndpoint;
+    rtLogError("Amit findObject  m_resolver :%p  \n ",m_resolver );
+    if( access( "/opt/amit.txt", F_OK ) != -1)
+    {
+      rtLogError("Amit file found m_resolver as NULL  \n ");
+      remove("/opt/amit.txt");
+      m_resolver = NULL; 
+    }
+    else 
+      rtLogError("Amit file not found \n ");
+
     err = m_resolver->locateObject(objectId, objectEndpoint, timeout);
 
     rtLogDebug("object %s found at endpoint: %s", objectId.c_str(),
